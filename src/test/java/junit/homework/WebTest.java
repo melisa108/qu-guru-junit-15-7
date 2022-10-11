@@ -2,17 +2,17 @@ package junit.homework;
 
 import com.codeborne.selenide.CollectionCondition;
 import com.codeborne.selenide.Configuration;
+import junit.homework.data.Locale;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.*;
-import qa.guru.data.Locale;
 
 import java.util.List;
 import java.util.stream.Stream;
 
-import static com.codeborne.selenide.Condition.*;
+import static com.codeborne.selenide.Condition.text;
+import static com.codeborne.selenide.Condition.visible;
 import static com.codeborne.selenide.Selectors.byText;
 import static com.codeborne.selenide.Selenide.*;
 
@@ -23,6 +23,14 @@ public class WebTest {
         open("https://www.collinsdictionary.com");
         $(".banner-actions-container").$(byText("I Accept")).click();
         Configuration.holdBrowserOpen = true;
+    }
+
+    static Stream<Arguments> collinsDictionaryButtonsText() {
+        return Stream.of(
+                Arguments.of(List.of("LANGUAGE", "TRANSLATOR", "GAMES", "SCHOOLS", "BLOG", "More", "English", "French", "German", "Italian", "Spanish", "Portuguese", "More"), Locale.English),
+                Arguments.of(List.of("LINGUA", "TRADUTTORE", "GIOCHI", "SCUOLE", "BLOG", "RISORSE", "Inglese", "Francese", "Tedesco", "Italiano", "Spagnolo", "Di Più"), Locale.Italiano)
+        );
+
     }
 
     @DisplayName("Valid search with 1 word")
@@ -36,7 +44,7 @@ public class WebTest {
                 .shouldHave(text(testData));
     }
 
-    @DisplayName("Valid search of first result ")
+    @DisplayName("Valid search of first result")
     @ParameterizedTest(name = "Check the headers and texts of search input {0}")
     @CsvSource({
             "engine, The engine of a car or other vehicle is the part that produces the power",
@@ -48,47 +56,17 @@ public class WebTest {
         $(".hom").shouldHave(text(expectedText));
     }
 
-    @Test
-    void local(){
-       $(".t-p-i_select").$(byText("Italiano")).click();
-    }
-
-    @CsvSource({
-            "Selenide, Selenide - это фреймворк для автоматизированного тестирования",
-            "JUnit, junit.org"
-    })
-    @ParameterizedTest(name = "Проверка числа результатов поиска в Яндексе для запроса {0}")
-    void yandexSearchCommonTestDifferentExpectedText(String searchQuery, String expectedText) {
-        open("https://ya.ru");
-        $("#text").setValue(searchQuery);
-        $("button[type='submit']").click();
-        $$("li.serp-item")
-                .shouldHave(CollectionCondition.sizeGreaterThanOrEqual(10))
-                .first()
-                .shouldHave(text(expectedText));
-    }
-
-    static Stream<Arguments> selenideSiteButtonsTextDataProvider() {
-        return Stream.of(
-                Arguments.of(List.of("Quick start", "Docs", "FAQ", "Blog", "Javadoc", "Users", "Quotes"), Locale.EN),
-                Arguments.of(List.of("С чего начать?", "Док", "ЧАВО", "Блог", "Javadoc", "Пользователи", "Отзывы"), Locale.RU)
-        );
-
-    }
-
-    @MethodSource("selenideSiteButtonsTextDataProvider")
-    @ParameterizedTest(name = "Проверка отображения названия кнопок для локали: {1}")
-    void selenideSiteButtonsText(List<String> buttonsTexts, Locale locale) {
-        open("https://selenide.org/");
-        $$("#languages a").find(text(locale.name())).click();
-        $$(".main-menu-pages a").filter(visible)
+    @MethodSource
+    @ParameterizedTest(name = "Check headers localization: {1}")
+    void collinsDictionaryButtonsText(List<String> buttonsTexts, Locale locale) {
+        $$(".t-p-i_select option").find(text(locale.name())).click();
+        $$(".major-links-container a").filter(visible)
                 .shouldHave(CollectionCondition.texts(buttonsTexts));
     }
 
     @EnumSource(Locale.class)
-    @ParameterizedTest
+    @ParameterizedTest(name = "Check options of localization")
     void checkLocaleTest(Locale locale) {
-        open("https://selenide.org/");
-        $$("#languages a").find(text(locale.name())).shouldBe(visible);
+        $$(".t-p-i_select option").find(text(locale.name())).shouldBe(visible);
     }
 }
