@@ -1,9 +1,10 @@
 package junit.homework;
 
 import com.codeborne.selenide.CollectionCondition;
-import com.codeborne.selenide.Configuration;
+import com.codeborne.selenide.Selenide;
 import junit.homework.data.Locale;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.*;
@@ -18,19 +19,25 @@ import static com.codeborne.selenide.Selenide.*;
 
 public class WebTest {
 
-    @BeforeAll
-    static void setUp() {
-        open("https://www.collinsdictionary.com");
-        $(".banner-actions-container").$(byText("I Accept")).click();
-        Configuration.holdBrowserOpen = true;
-    }
-
     static Stream<Arguments> collinsDictionaryButtonsText() {
         return Stream.of(
-                Arguments.of(List.of("LANGUAGE", "TRANSLATOR", "GAMES", "SCHOOLS", "BLOG", "More", "English", "French", "German", "Italian", "Spanish", "Portuguese", "More"), Locale.English),
-                Arguments.of(List.of("LINGUA", "TRADUTTORE", "GIOCHI", "SCUOLE", "BLOG", "RISORSE", "Inglese", "Francese", "Tedesco", "Italiano", "Spagnolo", "Di Più"), Locale.Italiano)
+                Arguments.of(List.of("LANGUAGE", "TRANSLATOR", "GAMES", "SCHOOLS", "BLOG",
+                        "More", "English", "French", "German", "Italian", "Spanish", "Portuguese", "More"), Locale.English),
+                Arguments.of(List.of("LINGUA", "TRADUTTORE", "GIOCHI", "SCUOLE", "BLOG",
+                        "RISORSE", "Inglese", "Francese", "Tedesco", "Italiano", "Spagnolo", "Di Più"), Locale.Italiano)
         );
 
+    }
+
+    @BeforeEach
+    void setUp() {
+        open("https://www.collinsdictionary.com");
+        $(".banner-actions-container").$(byText("I Accept")).click();
+    }
+
+    @AfterEach
+    public void closeWebDriver() {
+        Selenide.closeWebDriver();
     }
 
     @DisplayName("Valid search with 1 word")
